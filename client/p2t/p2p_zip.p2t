@@ -1,0 +1,12 @@
+{
+  "name": "p2p.zip",
+  "uuid": "e7df58f4-08fb-462a-8a77-5e8e2d0379fe",
+  "digest": "039e907e42b8802f2b98971b1aac086ce04de73e79b9c1040a7b5b8127160dc5",
+  "description": "Torrent of p2p.zip. Made by p2pTorrent Generator.",
+  "size": 35657,
+  "chunks": 1,
+  "digests": [
+    "039e907e42b8802f2b98971b1aac086ce04de73e79b9c1040a7b5b8127160dc5"
+  ],
+  "chunk_size": 102400
+}

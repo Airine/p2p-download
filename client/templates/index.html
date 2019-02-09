@@ -1,0 +1,236 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>p2pTorrent Client</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style>
+    body { margin: 1em 3em; color: #555; }
+    table { border-collapse: collapse; }
+    tbody { color: black; }
+    h1, h2, a { color: darkslategray; }
+    th, td { border-bottom: 1px solid #ddd; }
+    td { line-height: 1.5; font-size: 1.2em; padding: 0 0.8em; }
+    th { line-height: 2; padding: 0 0.8em; }
+    #servers { font-family: "Courier New", Courier, monospace; }
+    #servers tr:hover { background-color: #eee; }
+    #servers td:nth-child(n+2) { text-align: right; }
+    thead th:nth-child(n+2) { text-align: right; }
+    #servers td:last-child, thead th:last-child { text-align: left; }
+
+    .search-container input[type=text] {
+      float: none;
+      display: block;
+      text-align: left;
+      width: 100%;
+      margin: 0;
+      padding: 14px;
+      border: 1px solid #ccc;
+    }
+    .search-container button:hover {
+      background: #ccc;
+    }
+
+    .search-container {
+      float: none;
+    }
+    .search-container button {
+      float: right;
+      padding: 6px 10px;
+      margin-top: 8px;
+      margin-right: 16px;
+      background: #ddd;
+      font-size: 17px;
+      border: none;
+      cursor: pointer;
+    }
+    .search-container input[type=text] {
+      float: none;
+      display: block;
+      text-align: left;
+      width: 100%;
+      margin: 0;
+      padding: 14px;
+      border: 1px solid #ccc;
+    }
+
+    .search-result table {
+      font-size: small;
+    }
+  </style>
+</head>
+<body>
+<h1>Seed new File</h1>
+  <form action=/api/upload method=post enctype=multipart/form-data>
+    <input type=file name=file>
+    <input type=submit value=Upload>
+  </form>
+  <div class="search-container">
+    <input id=search type="text" placeholder="Search..">
+    <button><i class="fa fa-search"></i></button>
+  </div>
+  <div class="search-result"></div>
+  <div class="download-result"></div>
+
+
+<script>
+
+document.querySelector('.search-container button').addEventListener('click', () => {
+let $ = s => document.querySelector(s);
+function ajax(url) {
+    return new Promise((resolve, reject) => {
+      let request = new XMLHttpRequest();
+      request.open('GET', url, true);
+      request.onload = function() {
+        if (this.status >= 200 && this.status < 400) {
+          resolve(JSON.parse(this.response));
+        } else {
+          reject(this);
+        }
+      };
+      request.onerror = reject;
+      request.send();
+    })
+}
+
+function downloadFile(blob, fileName) {
+  const link = document.createElement('a');
+  // create a blobURI pointing to our Blob
+  link.href = URL.createObjectURL(blob);
+  link.download = fileName;
+  // some browser needs the anchor to be in the doc
+  document.body.append(link);
+  link.click();
+  link.remove();
+  // in case the Blob uses a lot of memory
+  window.addEventListener('focus', e=>URL.revokeObjectURL(link.href), {once:true});
+}
+
+function query_torrent(torrent) {
+  return new Promise((resolve, reject) => {
+    let request = new XMLHttpRequest();
+    // modify ip address below to your tracker ip
+    // request.open('GET', `http://10.20.193.197:5000/api/query?torrent=${torrent}`, true);
+    request.open('GET', `http://10.21.35.242:5000/api/query?torrent=${torrent}`, true);
+    request.onload = function() {
+      if (this.status >= 200 && this.status < 400) {
+        resolve(JSON.parse(this.response));
+      } else {
+        reject(this);
+      }
+    };
+    request.onerror = reject;
+    request.send();
+  });
+}
+
+String.prototype.fix_length = function(length) {
+  if (this.length < length) {
+    return this;
+  } else {
+    return this.substring(0, length - 3) + '...';
+  }
+};
+
+ArrayBuffer.prototype.concat = function(buffer) {
+  let tmp = new Uint8Array(this.byteLength + buffer.byteLength);
+  tmp.set(new Uint8Array(this), 0);
+  tmp.set(new Uint8Array(buffer), this.byteLength);
+  return tmp.buffer;
+};
+
+query_torrent($('.search-container input[type=text]').value)
+.then((seeders) => {
+  if (seeders.length === 0) {
+      return;
+  }
+
+  // render list
+  let torrent = $('.search-container input[type=text]').value;
+  let render = `<h3>${torrent}</h3>
+<table><thead><tr><th>Seeder UUID</th><th>Torrent URL</th><th>File URL</th></tr></thead><tbody id="servers">`;
+  seeders.forEach( seeder => {
+      render += `<tr>
+<td><span>${seeder['uuid']}</span></td>
+<td><a href="${seeder['torrent_url']}"><span>${seeder['torrent_url'].fix_length(40)}</span></a></td>
+<td><a href="${seeder['file_url']}"><span>${seeder['file_url'].fix_length(40)}</span></a></td></tr>`;
+  });
+  render += `</tbody></table><button id="download-file"><i class="fa fa-download"></i></button>`;
+  $('.search-result').innerHTML = render;
+
+  // add download event listener
+  $('#download-file').addEventListener('click', () => {
+    function download(url, offset, length) {
+      return new Promise((resolve, reject) => {
+        let request = new XMLHttpRequest();
+        request.open("GET", url);
+        request.responseType = "arraybuffer";
+        // Range: <unit>=<range-start>-<range-end>
+        if (offset != null && length != null) {
+          request.setRequestHeader("Range", `bytes=${offset}-${offset + length - 1}`);
+        }
+        request.onload = function() {
+          if (this.status >= 200 && this.status < 400) {
+            resolve(this.response);
+          } else {
+            reject(this);
+          }
+        };
+        request.send();
+      })
+    }
+    ajax(seeders[0]['torrent_url']).then(res => {
+        let buffer = new Array(res['chunks']);
+        let render = `<table>
+  <tbody>
+  <tr><td><span><b>Name</b></span></td><td><span>${res['name']}</span></td></tr>
+  <tr><td><span><b>UUID</b></span></td><td><span>${res['uuid']}</span></td></tr>
+  <tr><td><span><b>Description</b></span></td><td><span>${res['description']}</span></td></tr>
+  <tr><td><span><b>Size</b></span></td><td><span>${res['size'] / ( 1024 * 1024 )} MB</span></td></tr>
+  <tr><td><span><b>Chunks</b></span></td><td><span>${res['chunks']}</span></td></tr>
+  <tr><td><span><b>Chunk Size</b></span></td><td><span>${res['chunk_size'] / 1024} KB</span></td></tr>
+  </tbody>
+</table>
+<table>
+  <thead>
+  <tr>
+    <th>Chunk</th>
+    <th>Download From</th>
+    <th>Status</th>
+  </tr>
+  </thead>
+  <tbody>`;
+
+        res['digests'].forEach((chunk, i) => {
+            render += `<tr p-index="${i}">
+  <td><pre>${chunk.substring(0, 16)}</pre></td>
+  <td class="server">N/A</td>
+  <td class="status"><i class="fa fa-spinner fa-pulse fa-fw"></i></td>
+</tr>`;
+        });
+
+        render += `</tbody></table>`;
+        $('.download-result').innerHTML = render;
+        let tasks = [];
+        for(let i = 0; i < res['chunks']; ++i) {
+          let url = seeders[Math.floor(Math.random() * seeders.length)]['file_url'];
+          $(`.download-result tr[p-index="${i}"] td.server`).innerText = url.fix_length(40);
+          tasks.push(download(url, i * res['chunk_size'], res['chunk_size']).then(data => {
+            buffer[i] = data;
+            $(`.download-result tr[p-index="${i}"] td.status`).innerHTML = `<i class="fa fa-check"></i>`;
+          }));
+        }
+        Promise.all(tasks).then(() => {
+            console.log(buffer);
+          downloadFile(new Blob(buffer), res['name']);
+        });
+
+ 
+    })
+
+
+  });
+});
+});
+</script>
+</body>
+</html>

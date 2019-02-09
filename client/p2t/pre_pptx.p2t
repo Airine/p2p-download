@@ -1,0 +1,19 @@
+{
+  "name": "pre.pptx",
+  "uuid": "f2f68f78-24c0-4db4-95b5-5cfad95d6c91",
+  "digest": "4cf91cf0df6c8fa6b67a9a93f4cf8d295d55d3b2918e81d88d323c2de3eceab8",
+  "description": "Torrent of pre.pptx. Made by p2pTorrent Generator.",
+  "size": 794716,
+  "chunks": 8,
+  "digests": [
+    "2ebfdba95c88597e28f37f351d163c7c2baf4ffacb1eaf70b89577dc22f22e5d",
+    "1122e7c4077a8c3c0a544bcc1711d5fb50d11c503a1720339b9644cb86d3e771",
+    "a0b234f72c80fbbd630530a7b734e415ad1345bae686b411b1cad690b8db56fe",
+    "cc30f957caa55f42ec348d78b40b5e6c5df6d546c84effaae92f05588f06ee47",
+    "7c6918d9a472698c3a71838fa4b7dd1014fcf8b6a1bf527b1e5a98c726c78b7b",
+    "58baf21cc9092278a3ea672b0f5136648ae9634cab5a7ab20e4989ea446e5bce",
+    "7b22cf61a5bafeec4e45ceef06cec6a957ba40c679b75aa72ee3d6c20162cc95",
+    "6566f44238179649c4c8bf5de59cf69f9a05a4dd940b059a2737a55e697df0fb"
+  ],
+  "chunk_size": 102400
+}

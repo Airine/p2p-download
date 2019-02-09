@@ -1,0 +1,42 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Tracker Statics</title>
+  <style>
+    body { margin: 1em 3em; color: #555; }
+    table { border-collapse: collapse; }
+    tbody { color: black; }
+    h1, h2 { color: darkslategray; }
+    th, td { border-bottom: 1px solid #ddd; }
+    td { line-height: 1.5; font-size: 1.2em; padding: 0 0.8em; }
+    th { line-height: 2; padding: 0 0.8em; }
+    #servers { font-family: "Courier New", Courier, monospace; }
+    #servers tr:hover { background-color: #eee; }
+    #servers td:nth-child(n+2) { text-align: right; }
+    thead th:nth-child(n+2) { text-align: right; }
+    #servers td:last-child, thead th:last-child { text-align: left; }
+  </style>
+</head>
+<body>
+  <h1>Tracker Statics</h1>
+  <p>tracker <span id="version">(v0.2.4)</span> is running.
+    <!--<span id="uptime">1d21h</span></p>-->
+
+  <h2>Proxy servers</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Torrent UUID</th>
+        <th>Seeders</th>
+      </tr>
+    </thead>
+    <tbody id="servers">
+      <tr>
+        <td><span title="SOCKSv5://127.0.81.23:8139">4cf91cf0df6c8fa6b67a9a93f4cf8d295d55d3b2918e81d88d323c2de3eceab8</span></td>
+        <td><span title="based on average delay">1</span></td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>
